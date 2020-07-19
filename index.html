@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<title>room</title>
+		<script type="text/javascript" src="three.js"></script>
+
+		<style>
+			body {
+				margin: 0;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div id="Stats-output"></div>
+
+		<video
+			id="video"
+			style="display: none; position: absolute;"
+			src="movie.MP4"
+			autoplay="true"
+		></video>
+
+		<div id="WebGL-output"></div>
+
+		<script type="text/javascript">
+			function init() {
+				var scene = new THREE.Scene();
+
+				//カメラの位置指定
+				var camera = new THREE.PerspectiveCamera(
+					45,
+					window.innerWidth / window.innerHeight,
+					0.1,
+					2000
+				);
+				camera.position.x = 1200;
+				camera.position.y = 500;
+				camera.position.z = 600;
+				camera.lookAt(new THREE.Vector3(0, 400, 600));
+
+				var webGLRenderer = new THREE.WebGLRenderer();
+				webGLRenderer.setClearColor(new THREE.Color(0xeeeeee, 1.0));
+				webGLRenderer.setSize(window.innerWidth, window.innerHeight);
+				webGLRenderer.shadowMapEnabled = true;
+
+				/**
+                テクスチャ読み込み
+            **/
+
+				var wall1Tex = THREE.ImageUtils.loadTexture("wall1.PNG"); //壁１
+				var wall2Tex = THREE.ImageUtils.loadTexture("wall2.PNG"); //壁２
+				var wall3Tex = THREE.ImageUtils.loadTexture("wall3.PNG"); //壁３
+				var cellingTex = THREE.ImageUtils.loadTexture("celling.PNG"); //天井
+				var floorSubTex = THREE.ImageUtils.loadTexture("floorSub.PNG"); //壁の銀の銀のところ
+				var deskTex = THREE.ImageUtils.loadTexture("desk.PNG"); //机
+				var paintTex = THREE.ImageUtils.loadTexture("paint.png"); //壁の絵
+
+				/**
+                引き出しのつまみのextrude設定
+            */
+
+				var extrudeSettings = {
+					steps: 1,
+					amount: 3,
+					bevelSize: 0,
+				};
+
+				/**
+                テレビの液晶部分
+            */
+
+				var video = document.getElementById("video");
+				texture = new THREE.VideoTexture(video);
+
+				var videoMesh = new THREE.Mesh(
+					new THREE.BoxGeometry(0.5, 100, 160),
+					new THREE.MeshPhongMaterial({
+						map: texture,
+					})
+				);
+
+				videoMesh.position.set(-120, 120, 256);
+				videoMesh.rotation.y = -0.15 * Math.PI;
+				videoMesh.receiveShadow = true;
+				scene.add(videoMesh);
+
+				/**
+                テレビの本体部分
+            */
+
+				var extrudeSettingsTV = {
+					steps: 1,
+					amount: 100,
+					bevelSize: 10,
+				};
+
+				var tvShape = drawTV();
+
+				var tvGeometry = new THREE.ExtrudeGeometry(
+					tvShape,
+					extrudeSettingsTV
+				);
+
+				var tvMaterial = new THREE.MeshPhongMaterial({
+					emissive: 0x555555,
+					map: wall3Tex,
+				});
+
+				var tvMesh = new THREE.Mesh(tvGeometry, tvMaterial);
+				tvMesh.rotation.y = 0.35 * Math.PI;
+				tvMesh.position.set(-250, 50, 300);
+				tvMesh.receiveShadow = true;
+
+				scene.add(tvMesh);
+
+				var tvBottomMesh = new THREE.Mesh(
+					new THREE.BoxGeometry(200, 50, 250),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x222222,
+						color: 0xeeeeee,
+						map: wall3Tex,
+					})
+				);
+				tvBottomMesh.rotation.y = -0.15 * Math.PI;
+				tvBottomMesh.position.set(-160, 20, 240);
+				tvBottomMesh.castShadow = true;
+				tvBottomMesh.receiveShadow = true;
+				scene.add(tvBottomMesh);
+
+				/**
+                床
+            */
+
+				var floor = new THREE.Mesh(
+					new THREE.BoxGeometry(2000, 1200, 5),
+					new THREE.MeshPhongMaterial({
+						color: 0x3c3c3c,
+						map: cellingTex,
+					})
+				);
+				floor.rotation.x = -0.5 * Math.PI;
+				floor.position.set(0, 0, 600);
+				floor.receiveShadow = true;
+				scene.add(floor);
+
+				/**
+                奥の壁
+            */
+
+				var wall1 = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 800, 5),
+					new THREE.MeshPhongMaterial({
+						color: 0xcccccc,
+						map: wall1Tex,
+					})
+				);
+
+				wall1.rotation.y = -0.5 * Math.PI;
+				wall1.position.set(-400, 400, 600);
+				wall1.receiveShadow = true;
+				scene.add(wall1);
+
+				/**
+                右の壁
+            */
+
+				var wall2 = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 800, 5),
+					new THREE.MeshPhongMaterial({
+						color: 0x3c3c3c,
+						map: wall2Tex,
+					})
+				);
+
+				wall2.position.set(0, 400, 0);
+				wall2.receiveShadow = true;
+				scene.add(wall2);
+
+				/**
+                左の壁
+            */
+
+				var wall3 = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 800, 5),
+					new THREE.MeshPhongMaterial({
+						color: 0x3c3c3c,
+						map: wall3Tex,
+					})
+				);
+
+				wall3.position.set(0, 400, 1200);
+				wall3.receiveShadow = true;
+				scene.add(wall3);
+
+				/**
+                天井
+            */
+
+				var celling = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 1200, 5),
+					new THREE.MeshPhongMaterial({
+						color: 0x3c3c3c,
+						map: cellingTex,
+					})
+				);
+
+				//天井
+				celling.rotation.x = 0.5 * Math.PI;
+				celling.position.set(0, 800, 600);
+				scene.add(celling);
+
+				/**
+                壁１付属品
+            */
+
+				var wall1Down = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 30, 10),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x555555,
+						map: floorSubTex,
+					})
+				);
+
+				wall1Down.rotation.y = -0.5 * Math.PI;
+				wall1Down.position.set(-390, 15, 600);
+				scene.add(wall1Down);
+
+				/**
+                壁2付属品
+            */
+
+				var wall2Down = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 30, 10),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x555555,
+						map: floorSubTex,
+					})
+				);
+
+				wall2Down.position.set(200, 15, 1200);
+				scene.add(wall2Down);
+
+				/**
+                壁3付属品
+            */
+
+				var wall3Down = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 30, 10),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x555555,
+						map: floorSubTex,
+					})
+				);
+
+				wall3Down.position.set(200, 15, 10);
+				scene.add(wall3Down);
+
+				/**
+                壁１付属品　上
+            */
+
+				var wall1Down = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 20, 10),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x555555,
+						map: floorSubTex,
+					})
+				);
+
+				wall1Down.rotation.y = -0.5 * Math.PI;
+				wall1Down.position.set(-390, 790, 600);
+				scene.add(wall1Down);
+
+				/**
+                壁2付属品
+            */
+
+				var wall2Down = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 20, 10),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x555555,
+						map: floorSubTex,
+					})
+				);
+
+				wall2Down.position.set(200, 790, 1200);
+				scene.add(wall2Down);
+
+				/**
+                壁3付属品
+            */
+
+				var wall3Down = new THREE.Mesh(
+					new THREE.BoxGeometry(1200, 20, 10),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x555555,
+						map: floorSubTex,
+					})
+				);
+
+				wall3Down.position.set(200, 790, 10);
+				scene.add(wall3Down);
+
+				/**
+                敷物
+            **/
+
+				var floorSheet = new THREE.Mesh(
+					new THREE.BoxGeometry(600, 600, 2),
+					new THREE.MeshPhongMaterial({
+						color: 0xff0000,
+					})
+				);
+				floorSheet.rotation.x = 0.5 * Math.PI;
+				floorSheet.position.set(0, 2, 500);
+				//scene.add(floorSheet);
+
+				/**
+                机
+            */
+
+				var desk = new THREE.Mesh(
+					new THREE.BoxGeometry(200, 400, 10),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				desk.rotation.x = 0.5 * Math.PI;
+				desk.position.set(-150, 250, 800);
+				desk.castShadow = true;
+				scene.add(desk);
+
+				/**
+                机の足1
+            */
+				var deskFoot1 = new THREE.Mesh(
+					new THREE.CylinderGeometry(10, 10, 250),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				deskFoot1.rotation.y = 0.5 * Math.PI;
+				deskFoot1.position.set(-50, 125, 990);
+				deskFoot1.castShadow = true;
+				scene.add(deskFoot1);
+
+				/**
+                机の足2
+            */
+				var deskFoot2 = new THREE.Mesh(
+					new THREE.CylinderGeometry(10, 10, 250),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				deskFoot2.rotation.y = 0.5 * Math.PI;
+				deskFoot2.position.set(-50, 125, 610);
+				deskFoot2.castShadow = true;
+				scene.add(deskFoot2);
+
+				/**
+                机の足3
+            */
+				var deskFoot3 = new THREE.Mesh(
+					new THREE.CylinderGeometry(10, 10, 250),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				deskFoot3.rotation.y = 0.5 * Math.PI;
+				deskFoot3.position.set(-190, 125, 610);
+				deskFoot3.castShadow = true;
+				scene.add(deskFoot3);
+
+				/**
+                机の足4
+            */
+				var deskFoot4 = new THREE.Mesh(
+					new THREE.CylinderGeometry(10, 10, 250),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				deskFoot4.rotation.y = 0.5 * Math.PI;
+				deskFoot4.position.set(-190, 125, 1000);
+				deskFoot4.castShadow = true;
+				scene.add(deskFoot4);
+
+				/**
+                引き出し
+            */
+				var drawer1 = new THREE.Mesh(
+					new THREE.BoxGeometry(180, 50, 150),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				drawer1.position.set(-150, 210, 700);
+				drawer1.castShadow = true;
+				scene.add(drawer1);
+
+				/**
+                引き出しの取手1
+            **/
+
+				var handleShape = drawHandle();
+
+				var handleGeometry = new THREE.ExtrudeGeometry(
+					handleShape,
+					extrudeSettings
+				);
+				var handleMaterial = new THREE.MeshPhongMaterial({
+					emissive: 0x111111,
+					map: wall1Tex,
+				});
+
+				// add it to the scene.
+				var handleMesh1 = new THREE.Mesh(
+					handleGeometry,
+					handleMaterial
+				);
+
+				handleMesh1.rotation.y = 0.5 * Math.PI;
+				handleMesh1.rotation.x = 0.5 * Math.PI;
+				handleMesh1.rotation.z = 0.5 * Math.PI;
+				handleMesh1.position.set(-50, 220, 690);
+				handleMesh1.scale.set(0.5, 0.5, 0.4);
+				scene.add(handleMesh1);
+
+				/**
+                引き出し２
+            */
+
+				var drawer2 = new THREE.Mesh(
+					new THREE.BoxGeometry(180, 50, 150),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				drawer2.position.set(-150, 150, 700);
+				drawer2.castShadow = true;
+				scene.add(drawer2);
+
+				/**
+                引き出しの取手2
+            **/
+
+				var handleMesh2 = new THREE.Mesh(
+					handleGeometry,
+					handleMaterial
+				);
+
+				handleMesh2.rotation.y = 0.5 * Math.PI;
+				handleMesh2.rotation.x = 0.5 * Math.PI;
+				handleMesh2.rotation.z = 0.5 * Math.PI;
+				handleMesh2.position.set(-50, 160, 690);
+				handleMesh2.scale.set(0.5, 0.5, 0.4);
+				scene.add(handleMesh2);
+
+				/**
+                引き出し３
+            */
+
+				var drawer3 = new THREE.Mesh(
+					new THREE.BoxGeometry(180, 50, 150),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				drawer3.position.set(-150, 90, 700);
+				drawer3.castShadow = true;
+				scene.add(drawer3);
+
+				/**
+                引き出しの取手3
+            **/
+
+				var handleMesh3 = new THREE.Mesh(
+					handleGeometry,
+					handleMaterial
+				);
+
+				handleMesh3.rotation.y = 0.5 * Math.PI;
+				handleMesh3.rotation.x = 0.5 * Math.PI;
+				handleMesh3.rotation.z = 0.5 * Math.PI;
+				handleMesh3.position.set(-50, 100, 690);
+				handleMesh3.scale.set(0.5, 0.5, 0.4);
+				scene.add(handleMesh3);
+
+				/**
+            引き出し４
+            */
+
+				var drawer4 = new THREE.Mesh(
+					new THREE.BoxGeometry(180, 50, 150),
+					new THREE.MeshPhongMaterial({
+						emissive: 0x111111,
+						map: deskTex,
+					})
+				);
+
+				drawer4.position.set(-150, 30, 700);
+				drawer4.castShadow = true;
+				scene.add(drawer4);
+
+				/**
+                引き出しの取手4
+            **/
+
+				var handleMesh4 = new THREE.Mesh(
+					handleGeometry,
+					handleMaterial
+				);
+
+				handleMesh4.rotation.y = 0.5 * Math.PI;
+				handleMesh4.rotation.x = 0.5 * Math.PI;
+				handleMesh4.rotation.z = 0.5 * Math.PI;
+				handleMesh4.position.set(-50, 40, 690);
+				handleMesh4.scale.set(0.5, 0.5, 0.4);
+				scene.add(handleMesh4);
+
+				/**
+                椅子の座る部分
+            */
+
+				var chair = new THREE.Mesh(
+					new THREE.BoxGeometry(100, 10, 100),
+					new THREE.MeshPhongMaterial({
+						color: 0xffffff,
+						map: wall1Tex,
+						emissive: 0x222222,
+					})
+				);
+
+				chair.castShadow = true;
+				chair.receiveShadow = true;
+				chair.position.set(120, 158, 945);
+				chair.rotation.y = -0.2 * Math.PI;
+				scene.add(chair);
+
+				/**
+                椅子の足1
+            */
+
+				var chairFoot1 = new THREE.Mesh(
+					new THREE.BoxGeometry(10, 320, 10),
+					new THREE.MeshPhongMaterial({
+						color: 0xffffff,
+						map: wall1Tex,
+						emissive: 0x222222,
+					})
+				);
+
+				chairFoot1.position.set(180, 0, 935);
+				chairFoot1.castShadow = true;
+				chairFoot1.rotation.y = -0.2 * Math.PI;
+
+				scene.add(chairFoot1);
+
+				/**
+                椅子の足2
+            */
+
+				var chairFoot2 = new THREE.Mesh(
+					new THREE.BoxGeometry(10, 320, 10),
+					new THREE.MeshPhongMaterial({
+						color: 0xffffff,
+						map: wall1Tex,
+						emissive: 0x222222,
+					})
+				);
+
+				chairFoot2.position.set(115, 0, 888);
+				chairFoot2.castShadow = true;
+				chairFoot2.rotation.y = -0.2 * Math.PI;
+
+				scene.add(chairFoot2);
+
+				/**
+                椅子の足３
+            **/
+
+				var chairFoot3 = new THREE.Mesh(
+					new THREE.BoxGeometry(10, 320, 10),
+					new THREE.MeshPhongMaterial({
+						color: 0xffffff,
+						map: wall1Tex,
+						emissive: 0x222222,
+					})
+				);
+
+				chairFoot3.position.set(73, 0, 955);
+				chairFoot3.castShadow = true;
+				chairFoot3.rotation.y = -0.2 * Math.PI;
+
+				scene.add(chairFoot3);
+
+				/**
+                椅子の足4
+            **/
+
+				var chairFoot4 = new THREE.Mesh(
+					new THREE.BoxGeometry(10, 320, 10),
+					new THREE.MeshPhongMaterial({
+						color: 0xffffff,
+						map: wall1Tex,
+						emissive: 0x222222,
+					})
+				);
+
+				chairFoot4.position.set(135, 0, 1000);
+				chairFoot4.castShadow = true;
+				chairFoot4.rotation.y = -0.2 * Math.PI;
+				scene.add(chairFoot4);
+
+				/**
+                椅子の背もたれ
+            */
+				var rabbitExtrudeSetting = {
+					steps: 1,
+					amount: 0.5,
+					bevelSize: 0,
+				};
+
+				var chairBackShape = drawRabbit();
+
+				var chairBackGeometry = new THREE.ExtrudeGeometry(
+					chairBackShape,
+					rabbitExtrudeSetting
+				);
+
+				var chairBackMaterial = new THREE.MeshPhongMaterial({
+					emissive: 0x222222,
+					map: wall1Tex,
+				});
+
+				var chairBackMesh = new THREE.Mesh(
+					chairBackGeometry,
+					chairBackMaterial
+				);
+
+				chairBackMesh.rotation.y = 0.3 * Math.PI;
+				chairBackMesh.position.set(79, -4, 1077);
+				chairBackMesh.scale.set(7, 7, 1);
+				scene.add(chairBackMesh);
+
+				/**
+                天井のライトっぽい感じ
+            */
+
+				var pointLight2 = new THREE.SpotLight();
+				pointLight2.position.set(100, 200, 600);
+				pointLight2.intensity = 3;
+				pointLight2.target = celling;
+				scene.add(pointLight2);
+
+				/**
+                環境光
+            */
+
+				var ambiLight = new THREE.AmbientLight(0xc1bbbb);
+				scene.add(ambiLight);
+
+				/**
+                影作る用ライト
+            */
+
+				var spotLight = new THREE.SpotLight();
+				spotLight.position.set(300, 900, 1200);
+				spotLight.intensity = 0.3;
+				spotLight.castShadow = true;
+				spotLight.target = floor;
+				scene.add(spotLight);
+
+				/**
+                デスクライト
+            */
+
+				var deskLight = new THREE.Mesh(
+					new THREE.CylinderGeometry(34, 15, 50, 8, 1, true),
+					new THREE.MeshPhongMaterial({
+						color: 0xcccccc,
+						map: floorSubTex,
+						transparent: true,
+						opacity: 1.0,
+						shininess: 50,
+						specular: 0xcccccc,
+						side: THREE.DoubleSide,
+					})
+				);
+
+				deskLight.rotation.x = -0.5 * Math.PI;
+				deskLight.rotation.y = 0.3 * Math.PI;
+				deskLight.rotation.z = -0.3 * Math.PI;
+				deskLight.position.set(-180, 380, 920);
+				deskLight.receiveShadow = true;
+				deskLight.castShadow = true;
+				scene.add(deskLight);
+
+				/**
+                デスクライトの土台部分
+            */
+
+				var deskLightBottom = new THREE.Mesh(
+					new THREE.BoxGeometry(40, 5, 40),
+					new THREE.MeshPhongMaterial({
+						color: 0xcccccc,
+						map: floorSubTex,
+						emissive: 0x222222,
+						specular: 0xcccccc,
+					})
+				);
+
+				deskLightBottom.position.set(-180, 258, 940);
+				deskLightBottom.receiveShadow = true;
+				scene.add(deskLightBottom);
+
+				/**
+                デスクライトの持ち手部分
+            */
+
+				var deskLightHandleShape = drawDeskLight();
+
+				var deskLightHandleGeometry = new THREE.ExtrudeGeometry(
+					deskLightHandleShape,
+					extrudeSettings
+				);
+				var deskLightHandleMaterial = new THREE.MeshPhongMaterial({
+					emissive: 0x222222,
+					map: floorSubTex,
+				});
+
+				var deskLightHandle = new THREE.Mesh(
+					deskLightHandleGeometry,
+					deskLightHandleMaterial
+				);
+
+				deskLightHandle.rotation.y = 0.5 * Math.PI;
+				deskLightHandle.position.set(-180, 250, 970);
+				deskLightHandle.scale.set(1.4, 1.5, 1.0);
+				scene.add(deskLightHandle);
+
+				/**
+                デスクライトの内側を明るくする用のライト
+            */
+
+				var deskPointLight = new THREE.PointLight();
+				deskPointLight.position.set(-180, 385, 920);
+				deskPointLight.intensity = 0.8;
+				deskPointLight.distance = 100;
+				deskPointLight.decay = 0;
+				scene.add(deskPointLight);
+
+				/**
+                デスクライトが机を明るくする
+            */
+
+				var deskSpotLight = new THREE.SpotLight();
+				deskSpotLight.position.set(-180, 385, 925);
+				deskSpotLight.intensity = 1;
+				deskSpotLight.decay = 0;
+				deskSpotLight.castShadow = true;
+				deskSpotLight.target = desk;
+				scene.add(deskSpotLight);
+
+				/**
+                壁のイラスト
+            */
+
+				var wallPictureExtrudeSettings = {
+					steps: 1,
+					amount: 20,
+					bevelSize: 0,
+				};
+
+				var wallPictureShape = drawWallPicture();
+
+				var wallPictureGeometry = new THREE.ExtrudeGeometry(
+					wallPictureShape,
+					wallPictureExtrudeSettings
+				);
+
+				var wallPictureMaterial = new THREE.MeshPhongMaterial({
+					color: 0x000000,
+					emissive: 0x222222,
+					map: deskTex,
+				});
+
+				var wallPictureMesh = new THREE.Mesh(
+					wallPictureGeometry,
+					wallPictureMaterial
+				);
+
+				wallPictureMesh.rotation.y = 0.5 * Math.PI;
+				wallPictureMesh.position.set(-390, 450, 400);
+
+				scene.add(wallPictureMesh);
+
+				var wallPaintMesh = new THREE.Mesh(
+					new THREE.BoxGeometry(160, 100, 10),
+					new THREE.MeshPhongMaterial({
+						color: 0x3c3c3c,
+						map: paintTex,
+					})
+				);
+
+				wallPaintMesh.rotation.y = -0.5 * Math.PI;
+				wallPaintMesh.position.set(-400, 520, 300);
+				wallPaintMesh.receiveShadow = true;
+				scene.add(wallPaintMesh);
+
+				document
+					.getElementById("WebGL-output")
+					.appendChild(webGLRenderer.domElement);
+
+				render();
+
+				function render() {
+					//webGLRenderer.clear();
+					requestAnimationFrame(render);
+					webGLRenderer.render(scene, camera);
+				}
+
+				/**
+                ライトの持ち手部分
+            */
+
+				function drawHandle() {
+					var shape = new THREE.Shape();
+
+					shape.moveTo(20, 10);
+					shape.bezierCurveTo(18, 9, 17, 6, 12, 6);
+					shape.bezierCurveTo(5, 6, 5, 15, 5, 15);
+					shape.bezierCurveTo(5, 20, 10, 27, 18, 30);
+					shape.bezierCurveTo(27, 27, 32, 20, 32, 15);
+					shape.bezierCurveTo(32, 15, 32, 6, 25, 6);
+					shape.bezierCurveTo(21, 5, 18, 9, 19, 10);
+
+					return shape;
+				}
+
+				function drawDeskLight() {
+					var shape = new THREE.Shape();
+					shape.moveTo(20, 80);
+					shape.lineTo(25, 80);
+					shape.bezierCurveTo(19, 60, 19, 20, 25, 0);
+					shape.lineTo(20, 0);
+					shape.bezierCurveTo(14, 60, 14, 20, 20, 80);
+
+					return shape;
+				}
+
+				/**
+                テレビ
+            */
+
+				function drawTV() {
+					var shape = new THREE.Shape();
+					shape.moveTo(20, 0);
+					shape.lineTo(180, 0);
+					shape.bezierCurveTo(185, 5, 195, 15, 200, 20);
+					shape.lineTo(200, 120);
+					shape.bezierCurveTo(195, 125, 185, 135, 180, 140);
+					shape.lineTo(20, 140);
+					shape.bezierCurveTo(15, 135, 5, 125, 0, 120);
+					shape.lineTo(0, 20);
+					shape.bezierCurveTo(5, 15, 15, 5, 20, 0);
+
+					var shape2 = new THREE.Shape();
+					shape2.moveTo(20, 20);
+					shape2.lineTo(20, 120);
+					shape2.lineTo(180, 120);
+					shape2.lineTo(180, 20);
+					shape2.lineTo(20, 20);
+					shape.holes.push(shape2);
+
+					return shape;
+				}
+
+				/*
+                額縁
+            */
+
+				function drawWallPicture() {
+					var shape = new THREE.Shape();
+					shape.moveTo(0, 0);
+					shape.lineTo(200, 0);
+					shape.lineTo(200, 140);
+					shape.lineTo(0, 140);
+					shape.lineTo(0, 0);
+
+					var shape2 = new THREE.Shape();
+					shape2.moveTo(20, 20);
+					shape2.lineTo(20, 120);
+					shape2.lineTo(180, 120);
+					shape2.lineTo(180, 20);
+					shape2.lineTo(20, 20);
+					shape.holes.push(shape2);
+
+					var shape3 = new THREE.Shape();
+					shape3.absarc(100, 130, 3, 0, Math.PI * 2, true);
+					shape.holes.push(shape3);
+
+					return shape;
+				}
+
+				/**
+                背もたれ
+            */
+				function drawRabbit() {
+					var shape = new THREE.Shape();
+
+					shape.moveTo(12, 33);
+
+					shape.bezierCurveTo(8, 50, 18, 53, 16, 35);
+					shape.bezierCurveTo(20, 37, 22, 35, 24, 35);
+					shape.bezierCurveTo(27, 55, 35, 50, 28, 32);
+					shape.bezierCurveTo(28, 30, 28, 27, 26, 23);
+					shape.lineTo(12, 23);
+					shape.bezierCurveTo(10, 27, 12, 30, 12, 33);
+
+					var hole1 = new THREE.Path();
+					hole1.absellipse(15, 30, 1, 1, 0, Math.PI * 2, true);
+					shape.holes.push(hole1);
+
+					var hole2 = new THREE.Path();
+					hole2.absellipse(24, 30, 1, 1, 0, Math.PI * 2, true);
+					shape.holes.push(hole2);
+
+					return shape;
+				}
+			}
+			window.onload = init;
+		</script>
+	</body>
+</html>
