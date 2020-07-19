@@ -2,7 +2,7 @@
 
 <html>
 	<head>
-		<title>room</title>
+		<title>KadaiL</title>
 		<script type="text/javascript" src="three.js"></script>
 
 		<style>
@@ -19,13 +19,14 @@
 		<video
 			id="video"
 			style="display: none; position: absolute;"
-			src="movie.MP4"
+			src="movie.mp4"
 			autoplay="true"
 		></video>
 
 		<div id="WebGL-output"></div>
 
 		<script type="text/javascript">
+			var texture;
 			function init() {
 				var scene = new THREE.Scene();
 
@@ -47,8 +48,8 @@
 				webGLRenderer.shadowMapEnabled = true;
 
 				/**
-                テクスチャ読み込み
-            **/
+        テクスチャ読み込み
+    **/
 
 				var wall1Tex = THREE.ImageUtils.loadTexture("wall1.PNG"); //壁１
 				var wall2Tex = THREE.ImageUtils.loadTexture("wall2.PNG"); //壁２
@@ -59,8 +60,8 @@
 				var paintTex = THREE.ImageUtils.loadTexture("paint.png"); //壁の絵
 
 				/**
-                引き出しのつまみのextrude設定
-            */
+        引き出しのつまみのextrude設定
+    */
 
 				var extrudeSettings = {
 					steps: 1,
@@ -69,11 +70,17 @@
 				};
 
 				/**
-                テレビの液晶部分
-            */
+        テレビの液晶部分
+    */
 
 				var video = document.getElementById("video");
+				video.loop = true;
+				video.volume = 0.01;
 				texture = new THREE.VideoTexture(video);
+				texture.minFilter = THREE.LinearFilter;
+				texture.magFilter = THREE.LinearFilter;
+				texture.format = THREE.RGBFormat;
+				texture.generateMipmaps = false;
 
 				var videoMesh = new THREE.Mesh(
 					new THREE.BoxGeometry(0.5, 100, 160),
@@ -88,8 +95,8 @@
 				scene.add(videoMesh);
 
 				/**
-                テレビの本体部分
-            */
+        テレビの本体部分
+    */
 
 				var extrudeSettingsTV = {
 					steps: 1,
@@ -131,8 +138,8 @@
 				scene.add(tvBottomMesh);
 
 				/**
-                床
-            */
+        床
+    */
 
 				var floor = new THREE.Mesh(
 					new THREE.BoxGeometry(2000, 1200, 5),
@@ -147,8 +154,8 @@
 				scene.add(floor);
 
 				/**
-                奥の壁
-            */
+        奥の壁
+    */
 
 				var wall1 = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 800, 5),
@@ -164,8 +171,8 @@
 				scene.add(wall1);
 
 				/**
-                右の壁
-            */
+        右の壁
+    */
 
 				var wall2 = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 800, 5),
@@ -180,8 +187,8 @@
 				scene.add(wall2);
 
 				/**
-                左の壁
-            */
+        左の壁
+    */
 
 				var wall3 = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 800, 5),
@@ -196,8 +203,8 @@
 				scene.add(wall3);
 
 				/**
-                天井
-            */
+        天井
+    */
 
 				var celling = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 1200, 5),
@@ -213,8 +220,8 @@
 				scene.add(celling);
 
 				/**
-                壁１付属品
-            */
+        壁１付属品
+    */
 
 				var wall1Down = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 30, 10),
@@ -229,8 +236,8 @@
 				scene.add(wall1Down);
 
 				/**
-                壁2付属品
-            */
+        壁2付属品
+    */
 
 				var wall2Down = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 30, 10),
@@ -244,8 +251,8 @@
 				scene.add(wall2Down);
 
 				/**
-                壁3付属品
-            */
+        壁3付属品
+    */
 
 				var wall3Down = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 30, 10),
@@ -259,8 +266,8 @@
 				scene.add(wall3Down);
 
 				/**
-                壁１付属品　上
-            */
+        壁１付属品　上
+    */
 
 				var wall1Down = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 20, 10),
@@ -275,8 +282,8 @@
 				scene.add(wall1Down);
 
 				/**
-                壁2付属品
-            */
+        壁2付属品
+    */
 
 				var wall2Down = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 20, 10),
@@ -290,8 +297,8 @@
 				scene.add(wall2Down);
 
 				/**
-                壁3付属品
-            */
+        壁3付属品
+    */
 
 				var wall3Down = new THREE.Mesh(
 					new THREE.BoxGeometry(1200, 20, 10),
@@ -305,8 +312,8 @@
 				scene.add(wall3Down);
 
 				/**
-                敷物
-            **/
+        敷物
+    **/
 
 				var floorSheet = new THREE.Mesh(
 					new THREE.BoxGeometry(600, 600, 2),
@@ -319,8 +326,8 @@
 				//scene.add(floorSheet);
 
 				/**
-                机
-            */
+        机
+    */
 
 				var desk = new THREE.Mesh(
 					new THREE.BoxGeometry(200, 400, 10),
@@ -336,8 +343,8 @@
 				scene.add(desk);
 
 				/**
-                机の足1
-            */
+        机の足1
+    */
 				var deskFoot1 = new THREE.Mesh(
 					new THREE.CylinderGeometry(10, 10, 250),
 					new THREE.MeshPhongMaterial({
@@ -352,8 +359,8 @@
 				scene.add(deskFoot1);
 
 				/**
-                机の足2
-            */
+        机の足2
+    */
 				var deskFoot2 = new THREE.Mesh(
 					new THREE.CylinderGeometry(10, 10, 250),
 					new THREE.MeshPhongMaterial({
@@ -368,8 +375,8 @@
 				scene.add(deskFoot2);
 
 				/**
-                机の足3
-            */
+        机の足3
+    */
 				var deskFoot3 = new THREE.Mesh(
 					new THREE.CylinderGeometry(10, 10, 250),
 					new THREE.MeshPhongMaterial({
@@ -384,8 +391,8 @@
 				scene.add(deskFoot3);
 
 				/**
-                机の足4
-            */
+        机の足4
+    */
 				var deskFoot4 = new THREE.Mesh(
 					new THREE.CylinderGeometry(10, 10, 250),
 					new THREE.MeshPhongMaterial({
@@ -400,8 +407,8 @@
 				scene.add(deskFoot4);
 
 				/**
-                引き出し
-            */
+        引き出し
+    */
 				var drawer1 = new THREE.Mesh(
 					new THREE.BoxGeometry(180, 50, 150),
 					new THREE.MeshPhongMaterial({
@@ -415,8 +422,8 @@
 				scene.add(drawer1);
 
 				/**
-                引き出しの取手1
-            **/
+        引き出しの取手1
+    **/
 
 				var handleShape = drawHandle();
 
@@ -443,8 +450,8 @@
 				scene.add(handleMesh1);
 
 				/**
-                引き出し２
-            */
+        引き出し２
+    */
 
 				var drawer2 = new THREE.Mesh(
 					new THREE.BoxGeometry(180, 50, 150),
@@ -459,8 +466,8 @@
 				scene.add(drawer2);
 
 				/**
-                引き出しの取手2
-            **/
+        引き出しの取手2
+    **/
 
 				var handleMesh2 = new THREE.Mesh(
 					handleGeometry,
@@ -475,8 +482,8 @@
 				scene.add(handleMesh2);
 
 				/**
-                引き出し３
-            */
+        引き出し３
+    */
 
 				var drawer3 = new THREE.Mesh(
 					new THREE.BoxGeometry(180, 50, 150),
@@ -491,8 +498,8 @@
 				scene.add(drawer3);
 
 				/**
-                引き出しの取手3
-            **/
+        引き出しの取手3
+    **/
 
 				var handleMesh3 = new THREE.Mesh(
 					handleGeometry,
@@ -507,8 +514,8 @@
 				scene.add(handleMesh3);
 
 				/**
-            引き出し４
-            */
+    引き出し４
+    */
 
 				var drawer4 = new THREE.Mesh(
 					new THREE.BoxGeometry(180, 50, 150),
@@ -523,8 +530,8 @@
 				scene.add(drawer4);
 
 				/**
-                引き出しの取手4
-            **/
+        引き出しの取手4
+    **/
 
 				var handleMesh4 = new THREE.Mesh(
 					handleGeometry,
@@ -539,8 +546,8 @@
 				scene.add(handleMesh4);
 
 				/**
-                椅子の座る部分
-            */
+        椅子の座る部分
+    */
 
 				var chair = new THREE.Mesh(
 					new THREE.BoxGeometry(100, 10, 100),
@@ -558,8 +565,8 @@
 				scene.add(chair);
 
 				/**
-                椅子の足1
-            */
+        椅子の足1
+    */
 
 				var chairFoot1 = new THREE.Mesh(
 					new THREE.BoxGeometry(10, 320, 10),
@@ -577,8 +584,8 @@
 				scene.add(chairFoot1);
 
 				/**
-                椅子の足2
-            */
+        椅子の足2
+    */
 
 				var chairFoot2 = new THREE.Mesh(
 					new THREE.BoxGeometry(10, 320, 10),
@@ -596,8 +603,8 @@
 				scene.add(chairFoot2);
 
 				/**
-                椅子の足３
-            **/
+        椅子の足３
+    **/
 
 				var chairFoot3 = new THREE.Mesh(
 					new THREE.BoxGeometry(10, 320, 10),
@@ -615,8 +622,8 @@
 				scene.add(chairFoot3);
 
 				/**
-                椅子の足4
-            **/
+        椅子の足4
+    **/
 
 				var chairFoot4 = new THREE.Mesh(
 					new THREE.BoxGeometry(10, 320, 10),
@@ -633,8 +640,8 @@
 				scene.add(chairFoot4);
 
 				/**
-                椅子の背もたれ
-            */
+        椅子の背もたれ
+    */
 				var rabbitExtrudeSetting = {
 					steps: 1,
 					amount: 0.5,
@@ -664,8 +671,8 @@
 				scene.add(chairBackMesh);
 
 				/**
-                天井のライトっぽい感じ
-            */
+        天井のライトっぽい感じ
+    */
 
 				var pointLight2 = new THREE.SpotLight();
 				pointLight2.position.set(100, 200, 600);
@@ -674,15 +681,15 @@
 				scene.add(pointLight2);
 
 				/**
-                環境光
-            */
+        環境光
+    */
 
 				var ambiLight = new THREE.AmbientLight(0xc1bbbb);
 				scene.add(ambiLight);
 
 				/**
-                影作る用ライト
-            */
+        影作る用ライト
+    */
 
 				var spotLight = new THREE.SpotLight();
 				spotLight.position.set(300, 900, 1200);
@@ -692,8 +699,8 @@
 				scene.add(spotLight);
 
 				/**
-                デスクライト
-            */
+        デスクライト
+    */
 
 				var deskLight = new THREE.Mesh(
 					new THREE.CylinderGeometry(34, 15, 50, 8, 1, true),
@@ -717,8 +724,8 @@
 				scene.add(deskLight);
 
 				/**
-                デスクライトの土台部分
-            */
+        デスクライトの土台部分
+    */
 
 				var deskLightBottom = new THREE.Mesh(
 					new THREE.BoxGeometry(40, 5, 40),
@@ -735,8 +742,8 @@
 				scene.add(deskLightBottom);
 
 				/**
-                デスクライトの持ち手部分
-            */
+        デスクライトの持ち手部分
+    */
 
 				var deskLightHandleShape = drawDeskLight();
 
@@ -760,8 +767,8 @@
 				scene.add(deskLightHandle);
 
 				/**
-                デスクライトの内側を明るくする用のライト
-            */
+        デスクライトの内側を明るくする用のライト
+    */
 
 				var deskPointLight = new THREE.PointLight();
 				deskPointLight.position.set(-180, 385, 920);
@@ -771,8 +778,8 @@
 				scene.add(deskPointLight);
 
 				/**
-                デスクライトが机を明るくする
-            */
+        デスクライトが机を明るくする
+    */
 
 				var deskSpotLight = new THREE.SpotLight();
 				deskSpotLight.position.set(-180, 385, 925);
@@ -783,8 +790,8 @@
 				scene.add(deskSpotLight);
 
 				/**
-                壁のイラスト
-            */
+        壁のイラスト
+    */
 
 				var wallPictureExtrudeSettings = {
 					steps: 1,
@@ -836,13 +843,16 @@
 
 				function render() {
 					//webGLRenderer.clear();
+					if (video.readyState === video.HAVE_ENOUGH_DATA) {
+						if (texture) texture.needsUpdate = true;
+					}
 					requestAnimationFrame(render);
 					webGLRenderer.render(scene, camera);
 				}
 
 				/**
-                ライトの持ち手部分
-            */
+        ライトの持ち手部分
+    */
 
 				function drawHandle() {
 					var shape = new THREE.Shape();
@@ -870,8 +880,8 @@
 				}
 
 				/**
-                テレビ
-            */
+        テレビ
+    */
 
 				function drawTV() {
 					var shape = new THREE.Shape();
@@ -897,8 +907,8 @@
 				}
 
 				/*
-                額縁
-            */
+        額縁
+    */
 
 				function drawWallPicture() {
 					var shape = new THREE.Shape();
@@ -924,8 +934,8 @@
 				}
 
 				/**
-                背もたれ
-            */
+        背もたれ
+    */
 				function drawRabbit() {
 					var shape = new THREE.Shape();
 
