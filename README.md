@@ -12,9 +12,7 @@
 
 ## DEMO
 
-mayu-snba19.github.io/threejs-page/
-
-↑ ここから見ることができます。
+[ここから](mayu-snba19.github.io/threejs-page/) 見ることができます。
 
 ## 実行環境
 
