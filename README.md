@@ -22,6 +22,11 @@ Google Chrome 83.0.4103.116（Official Build）
 
 Chrome以外だと動画が再生されません（残念ながらChromeでもたまに再生されないことがあります...）
 
+## BGM
+
+[DOVA-SYNDROME『観覧車』](https://dova-s.jp/bgm/play13064.html)を使用させていただきました。
+
 ## 追記
 
 正直Three.jsで思った通りの立体を作成するのはかなり大変だったので、この課題を提出し終わってからblenderの勉強をはじめました！
+
